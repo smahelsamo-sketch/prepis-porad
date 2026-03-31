@@ -453,7 +453,7 @@ async function startTranscription(){
     setStep('s2','active');
     document.getElementById('progress-text').textContent='Odosielam na spracovanie...';
     const sc=parseInt(document.getElementById('speaker-count').value)||null;
-    const body={audio_url:upload_url,speaker_labels:true,language_code:'sk',punctuate:true,format_text:true};
+    const body={audio_url:upload_url,speaker_labels:true,language_code:'sk',punctuate:true,format_text:true,speech_model:'universal-2'};
     if(sc) body.speakers_expected=sc;
     const jobRes=await fetch('https://api.assemblyai.com/v2/transcript',{
       method:'POST',
