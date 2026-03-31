@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<html lang="sk">
-<head>
-<meta charset="UTF-8">
+<!-- saved from url=(0049)file:///Users/samuelsmahel/Downloads/index_1.html -->
+<html lang="sk"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Prepis">
 <meta name="theme-color" content="#5b7cfa">
-<link rel="manifest" href="manifest.json">
+<link rel="manifest" href="file:///Users/samuelsmahel/Downloads/manifest.json">
 <title>Prepis Porád</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
@@ -180,7 +180,7 @@
     </label>
   </div>
   <div class="hint">
-    🔑 Zaregistruj sa na <a href="https://www.assemblyai.com" target="_blank">assemblyai.com</a> → <strong>bezplatne dostaneš $50 kreditu</strong> (~83 hodín prepisu). Slovenčina je podporovaná. Kľúč zostáva len v tejto záložke.
+    🔑 Zaregistruj sa na <a href="https://www.assemblyai.com/" target="_blank">assemblyai.com</a> → <strong>bezplatne dostaneš $50 kreditu</strong> (~83 hodín prepisu). Slovenčina je podporovaná. Kľúč zostáva len v tejto záložke.
   </div>
 </div>
 
@@ -188,14 +188,14 @@
 <div class="card">
   <div class="card-title"><span class="dot"></span> Zdroj zvuku</div>
   <div class="tabs">
-    <button class="tab active" onclick="switchTab('record')">🎙️ Nahrávanie</button>
-    <button class="tab" onclick="switchTab('upload')">📁 Nahrať súbor</button>
+    <button class="tab active" onclick="switchTab(&#39;record&#39;)">🎙️ Nahrávanie</button>
+    <button class="tab" onclick="switchTab(&#39;upload&#39;)">📁 Nahrať súbor</button>
   </div>
 
   <div id="tab-record">
     <div class="mic-row">
       <label>Mikrofón:</label>
-      <select id="mic-select"><option value="">— klikni Obnoviť —</option></select>
+      <select id="mic-select"><option value="">Mikrofón 1</option></select>
       <button onclick="loadMics()">🔄 Obnoviť</button>
     </div>
     <canvas id="visualizer"></canvas>
@@ -211,7 +211,7 @@
   </div>
 
   <div id="tab-upload" class="hidden">
-    <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+    <div class="drop-zone" id="drop-zone" onclick="document.getElementById(&#39;file-input&#39;).click()">
       <input type="file" id="file-input" accept="audio/*,video/*" onchange="handleFile(this.files[0])">
       <div class="dz-icon">🎧</div>
       <div class="dz-main">Pretiahni súbor sem alebo klikni</div>
@@ -247,7 +247,7 @@
   </div>
 
   <div class="btn-group" style="margin-top:4px;margin-bottom:20px">
-    <button class="btn btn-primary" id="transcribe-btn" onclick="startTranscription()" disabled>
+    <button class="btn btn-primary" id="transcribe-btn" onclick="startTranscription()" disabled="">
       ✨ Prepísať s diarizáciou
     </button>
     <button class="btn btn-outline hidden" id="copy-btn" onclick="copyText()">📋 Kopírovať</button>
@@ -284,11 +284,11 @@
     </label>
   </div>
   <div class="hint">
-    Ako nastaviť: <a href="https://console.cloud.google.com" target="_blank">console.cloud.google.com</a> → Nový projekt → <strong>Google Drive API</strong> → OAuth 2.0 Client ID (Webová aplikácia) → pridaj URL tejto stránky ako autorizované URI.
+    Ako nastaviť: <a href="https://console.cloud.google.com/" target="_blank">console.cloud.google.com</a> → Nový projekt → <strong>Google Drive API</strong> → OAuth 2.0 Client ID (Webová aplikácia) → pridaj URL tejto stránky ako autorizované URI.
   </div>
   <div id="status-drive" class="status mt12"></div>
   <hr class="divider">
-  <button class="btn btn-success" id="save-btn" onclick="saveToDrive()" disabled>
+  <button class="btn btn-success" id="save-btn" onclick="saveToDrive()" disabled="">
     📤 Uložiť prepis na Google Drive
   </button>
   <div id="status-save" class="status mt12"></div>
@@ -453,7 +453,7 @@ async function startTranscription(){
     setStep('s2','active');
     document.getElementById('progress-text').textContent='Odosielam na spracovanie...';
     const sc=parseInt(document.getElementById('speaker-count').value)||null;
-    const body={audio_url:upload_url,speaker_labels:true,language_code:'sk',punctuate:true,format_text:true,speech_model:'universal-2'};
+    const body={audio_url:upload_url,speaker_labels:true,language_code:'sk',punctuate:true,format_text:true,speech_models:['universal-2']};
     if(sc) body.speakers_expected=sc;
     const jobRes=await fetch('https://api.assemblyai.com/v2/transcript',{
       method:'POST',
@@ -703,5 +703,6 @@ if (isIOS && !isStandalone && !localStorage.getItem('ios_hint_shown')) {
   localStorage.setItem('ios_hint_shown', '1');
 }
 </script>
-</body>
-</html>
+
+
+</body></html>
