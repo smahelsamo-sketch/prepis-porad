@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0049)file:///Users/samuelsmahel/Downloads/index_3.html -->
+<!-- saved from url=(0049)file:///Users/samuelsmahel/Downloads/index_4.html -->
 <html lang="sk"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -195,7 +195,7 @@
   <div id="tab-record">
     <div class="mic-row">
       <label>Mikrofón:</label>
-      <select id="mic-select"><option value="">Mikrofón 1</option></select>
+      <select id="mic-select"><option value="">— klikni Obnoviť —</option></select>
       <button onclick="loadMics()">🔄 Obnoviť</button>
     </div>
     <canvas id="visualizer"></canvas>
@@ -375,9 +375,10 @@ async function startRec(){
     mediaRec.ondataavailable=e=>{if(e.data.size>0)audioChunks.push(e.data);};
     mediaRec.onstop=()=>{
       currentBlob=new Blob(audioChunks,{type:mediaRec.mimeType}); currentFile=null; upd();
-      // Auto-download recording
+      // Auto-download recording into Nahrávky/YYYY-MM Mesiac/
       const ext=getExt(currentBlob.type);
-      const ts=new Date().toISOString().slice(0,16).replace('T',' ').replace(':','-');
+      const d=new Date();
+      const ts=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}-${String(d.getMinutes()).padStart(2,'0')}`;
       const a=document.createElement('a');
       a.href=URL.createObjectURL(currentBlob);
       a.download=`Nahrávka ${ts}.${ext}`;
@@ -424,7 +425,21 @@ function getExt(mime){
   return m[mime.split(';')[0]]||'webm';
 }
 
-// ── AssemblyAI transcription ──────────────────────────────────
+// ── Month folder helper ───────────────────────────────────────
+const SK_MONTHS = ['Január','Február','Marec','Apríl','Máj','Jún','Júl','August','September','Október','November','December'];
+function monthFolder() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  return `Prepisy/${y}-${m} ${SK_MONTHS[d.getMonth()]}`;
+}
+function monthFolderRec() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  return `Nahrávky/${y}-${m} ${SK_MONTHS[d.getMonth()]}`;
+}
+
 async function startTranscription(){
   const key=document.getElementById('aai-key').value.trim();
   if(!key){ss('status-transcribe','❌ Zadaj AssemblyAI API kľúč','error');return;}
@@ -492,8 +507,12 @@ async function startTranscription(){
     document.getElementById('dl-btn').classList.remove('hidden');
     document.getElementById('save-btn').disabled=false;
     ss('status-transcribe','✅ Prepis dokončený!','success');
-    if(!document.getElementById('doc-title').value)
-      document.getElementById('doc-title').value='Prepis '+new Date().toLocaleDateString('sk');
+    if(!document.getElementById('doc-title').value){
+      const d=new Date();
+      document.getElementById('doc-title').value='Prepis '+d.toLocaleDateString('sk');
+    }
+    // Always update folder to current month
+    document.getElementById('folder-name').value=monthFolder();
 
   }catch(e){
     ss('status-transcribe','❌ Chyba: '+e.message,'error');
@@ -649,7 +668,11 @@ const FOLDER_STORE = 'prepis_folder';
   const f = localStorage.getItem(FOLDER_STORE);
   if (k) document.getElementById('aai-key').value = k;
   if (g) document.getElementById('google-client-id').value = g;
-  if (f) document.getElementById('folder-name').value = f;
+  // Always set current month folder
+  document.getElementById('folder-name').value = f || monthFolder();
+  // Auto fill doc title with today's date
+  const d = new Date();
+  document.getElementById('doc-title').value = `Prepis ${d.toLocaleDateString('sk')}`;
 })();
 
 document.getElementById('aai-key').addEventListener('change', function() {
