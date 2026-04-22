@@ -1,7 +1,7 @@
-const CACHE = 'prepis-v1';
+const CACHE = 'prepis-v2';
 const ASSETS = [
-  '/',
-  '/index.html',
+  '/prepis-porad/',
+  '/prepis-porad/index.html',
   'https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap'
 ];
 
@@ -22,7 +22,6 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
-  // Len GET requesty, API volania necháme ísť priamo
   if (e.request.method !== 'GET') return;
   if (e.request.url.includes('assemblyai.com') || e.request.url.includes('googleapis.com') || e.request.url.includes('accounts.google.com')) return;
 
@@ -35,7 +34,7 @@ self.addEventListener('fetch', e => {
           caches.open(CACHE).then(c => c.put(e.request, clone));
         }
         return res;
-      }).catch(() => caches.match('/index.html'));
+      }).catch(() => caches.match('/prepis-porad/index.html'));
     })
   );
 });
