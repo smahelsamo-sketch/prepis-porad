@@ -637,10 +637,11 @@ async function saveToDrive(){
 async function mkPath(path){
   let pid='root';
   for(const part of path.split('/').map(s=>s.trim()).filter(Boolean)){
-    const q=encodeURIComponent(`mimeType='application/vnd.google-apps.folder' and name='${part}' and '${pid}' in parents and trashed=false`);
-    const r=await fetch(`https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id)`,{headers:{'Authorization':'Bearer '+googleToken}});
+    const q=encodeURIComponent(`mimeType='application/vnd.google-apps.folder' and '${pid}' in parents and trashed=false`);
+    const r=await fetch(`https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id,name)&pageSize=100`,{headers:{'Authorization':'Bearer '+googleToken}});
     const d=await r.json();
-    if(d.files&&d.files.length>0){pid=d.files[0].id;}
+    const found=(d.files||[]).find(f=>f.name.toLowerCase()===part.toLowerCase());
+    if(found){pid=found.id;}
     else{
       const cr=await fetch('https://www.googleapis.com/drive/v3/files',{
         method:'POST',headers:{'Authorization':'Bearer '+googleToken,'Content-Type':'application/json'},
