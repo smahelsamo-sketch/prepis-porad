@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<!-- saved from url=(0049)file:///Users/samuelsmahel/Downloads/index_6.html -->
 <html lang="sk"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -8,7 +7,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Prepis">
 <meta name="theme-color" content="#5b7cfa">
-<link rel="manifest" href="file:///Users/samuelsmahel/Downloads/manifest.json">
+<link rel="manifest" href="manifest.json">
 <title>Prepis Porád</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
@@ -375,15 +374,26 @@ async function startRec(){
     mediaRec.ondataavailable=e=>{if(e.data.size>0)audioChunks.push(e.data);};
     mediaRec.onstop=()=>{
       currentBlob=new Blob(audioChunks,{type:mediaRec.mimeType}); currentFile=null; upd();
-      // Auto-download recording into Nahrávky/YYYY-MM Mesiac/
       const ext=getExt(currentBlob.type);
       const d=new Date();
       const ts=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}-${String(d.getMinutes()).padStart(2,'0')}`;
+      const fname=`Nahrávka ${ts}.${ext}`;
+      // Auto-download
       const a=document.createElement('a');
       a.href=URL.createObjectURL(currentBlob);
-      a.download=`Nahrávka ${ts}.${ext}`;
-      a.click();
-      ss('status-rec',`✅ Nahrávka stiahnutá a pripravená na prepis (${fsz(currentBlob.size)})`,'success');
+      a.download=fname; a.click();
+      if(googleToken){
+        ss('status-rec',`✅ Nahrávka stiahnutá (${fsz(currentBlob.size)}) · <span class="spinner spinner-dark" style="display:inline-block;vertical-align:middle;margin-left:4px"></span> Ukladám na Drive...`,'success');
+        mkPath(monthFolderRec())
+          .then(fid=>uploadRecordingToDrive(currentBlob,fname,fid))
+          .then(dr=>{
+            const link=`https://drive.google.com/file/d/${dr.id}/view`;
+            ss('status-rec',`✅ Nahrávka stiahnutá (${fsz(currentBlob.size)}) a uložená na Drive! <a href="${link}" target="_blank" style="color:var(--success)">Otvoriť →</a>`,'success');
+          })
+          .catch(e=>ss('status-rec',`✅ Nahrávka stiahnutá · ❌ Drive: ${e.message}`,'warn'));
+      } else {
+        ss('status-rec',`✅ Nahrávka stiahnutá a pripravená na prepis (${fsz(currentBlob.size)})`,'success');
+      }
     };
     mediaRec.start(200); isRecording=true; recSec=0;
     document.getElementById('rec-btn').classList.add('active');
@@ -437,7 +447,7 @@ function monthFolderRec() {
   const d = new Date();
   const y = d.getFullYear();
   const m = String(d.getMonth()+1).padStart(2,'0');
-  return `Nahrávky/${y}-${m} ${SK_MONTHS[d.getMonth()]}`;
+  return `workflow/Nahrávky/${y}-${m} ${SK_MONTHS[d.getMonth()]}`;
 }
 
 async function startTranscription(){
@@ -640,6 +650,18 @@ async function mkPath(path){
     }
   }
   return pid;
+}
+
+async function uploadRecordingToDrive(blob, filename, folderId){
+  const meta={name:filename,...(folderId?{parents:[folderId]}:{})};
+  const form=new FormData();
+  form.append('metadata',new Blob([JSON.stringify(meta)],{type:'application/json'}));
+  form.append('file',blob);
+  const res=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',{
+    method:'POST',headers:{'Authorization':'Bearer '+googleToken},body:form
+  });
+  if(!res.ok){const e=await res.json();throw new Error(e.error?.message||'Drive API chyba');}
+  return await res.json();
 }
 </script>
 
